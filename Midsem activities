@@ -1,0 +1,116 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+// Student class (Week 1)
+class Student {
+public:
+    string id;
+    string name;
+
+    Student(string _id, string _name) : id(_id), name(_name) {}
+
+    friend ostream& operator<<(ostream& os, const Student& s) {
+        os << s.id << "," << s.name;
+        return os;
+    }
+};
+
+// AttendanceSession class (Week 2)
+class AttendanceSession {
+public:
+    string date;
+    vector<Student> attendees;
+
+    AttendanceSession(string _date) : date(_date) {}
+
+    void addStudent(const Student& s) {
+        attendees.push_back(s);
+    }
+
+    friend ostream& operator<<(ostream& os, const AttendanceSession& a) {
+        os << a.date << "\n";
+        for (const auto& s : a.attendees) os << s << "\n";
+        return os;
+    }
+};
+
+// File operations (Week 4)
+void saveSession(const AttendanceSession& session, const string& filename) {
+    ofstream file(filename);
+    file << session;
+    file.close();
+}
+
+void loadSession(AttendanceSession& session, const string& filename) {
+    ifstream file(filename);
+    string line;
+    getline(file, session.date);
+    while (getline(file, line)) {
+        // Simple parsing; assume format "id,name"
+        size_t comma = line.find(',');
+        Student s(line.substr(0, comma), line.substr(comma + 1));
+        session.addStudent(s);
+    }
+    file.close();
+}
+
+// Menu-driven program (Week 2 & 3)
+void menu(vector<Student>& students, vector<AttendanceSession>& sessions) {
+    int choice;
+    do {
+        cout << "\n1. Add Student\n2. Create Session\n3. Mark Attendance\n4. Save Sessions\n5. Load Sessions\n6. Exit\n";
+        cin >> choice;
+        switch (choice) {
+            case 1: {
+                string id, name;
+                cout << "Enter ID & Name: ";
+                cin >> id >> name;
+                students.emplace_back(id, name);
+                break;
+            }
+            case 2: {
+                string date;
+                cout << "Enter session date: ";
+                cin >> date;
+                sessions.emplace_back(date);
+                break;
+            }
+            case 3: {
+                int sid, ssid;
+                cout << "Select student index & session index: ";
+                cin >> sid >> ssid;
+                sessions[ssid].addStudent(students[sid]);
+                break;
+            }
+            case 4: {
+                for (size_t i = 0; i < sessions.size(); ++i) {
+                    saveSession(sessions[i], "session_" + to_string(i) + ".txt");
+                }
+                break;
+            }
+            case 5: {
+                AttendanceSession s("");
+                loadSession(s, "session_0.txt");
+                cout << s;
+                break;
+            }
+        }
+    } while (choice != 6);
+}
+
+int main() {
+    vector<Student> students;
+    vector<AttendanceSession> sessions;
+
+    // Initial project structure (Week 1)
+    cout << "Digital Attendance System\n";
+
+    // Menu flow
+    menu(students, sessions);
+
+    return 0;
+}
